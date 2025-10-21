@@ -1,0 +1,15 @@
+2025-10-21 21:42:45,947 - INFO - Process submitted started
+2025-10-21 21:42:45,972 - INFO - Starting matching for benchmarks: ['EMP100011', 'EMP100010', 'EMP100012']
+2025-10-21 21:42:48,800 - INFO - Loaded table profiles_psych with 2010 rows
+2025-10-21 21:43:24,674 - INFO - Loaded table competencies_yearly with 100500 rows
+2025-10-21 21:43:35,221 - INFO - Loaded table papi_scores with 40200 rows
+2025-10-21 21:43:35,576 - INFO - Loaded table dim_talent_mapping with 80 rows
+2025-10-21 21:43:36,816 - INFO - Loaded table employees with 2010 rows
+2025-10-21 21:43:37,058 - INFO - Loaded table dim_directorates with 3 rows
+2025-10-21 21:43:37,297 - INFO - Loaded table dim_positions with 6 rows
+2025-10-21 21:43:37,527 - INFO - Loaded table dim_grades with 3 rows
+2025-10-21 21:43:38,003 - INFO - Matching completed with 57195 rows
+2025-10-21 21:43:38,064 - WARNING - Low benchmark completeness: 34.3%
+2025-10-21 21:43:40,848 - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 21:43:41,369 - INFO - Process completed successfully
+2025-10-21 21:44:57,067 - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"

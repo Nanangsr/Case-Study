@@ -1,2 +1,31 @@
+# Environment
 .env
 venv/
+env/
+*.pyc
+__pycache__/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Data
+data/
+*.csv
+*.xlsx
+!dim_talent_mapping_rows.csv
+
+# OS
+.DS_Store
+Thumbs.db
+
+
+# Exported files / Generated reports
+exports/
+*.csv
+*.xlsx
+*.pdf
+
+# Streamlit
+.streamlit/secrets.toml
