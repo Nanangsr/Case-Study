@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 import requests
 import logging
-
 from config import Config
 
 # Pengaturan logging
@@ -83,14 +82,14 @@ def run_matching_query(benchmark_ids: list):
         logging.error("One or more source tables empty")
         return pd.DataFrame()
     
-    # Konversi kolom numerik
+    # Konversi kolom numerik - PAKSA ke numeric dari awal
     for col in ['iq', 'pauli']:
         if col in df_psych.columns:
-            df_psych[col] = pd.to_numeric(df_psych[col], errors='coerce')
+            df_psych[col] = pd.to_numeric(df_psych[col], errors='coerce').fillna(0.0)
     
-    df_comp['score'] = pd.to_numeric(df_comp['score'], errors='coerce')
+    df_comp['score'] = pd.to_numeric(df_comp['score'], errors='coerce').fillna(0.0)
     df_comp['year'] = pd.to_numeric(df_comp['year'], errors='coerce')
-    df_papi['score'] = pd.to_numeric(df_papi['score'], errors='coerce')
+    df_papi['score'] = pd.to_numeric(df_papi['score'], errors='coerce').fillna(0.0)
     
     # Dapatkan tahun kompetensi terbaru
     latest_year = df_comp['year'].max()
@@ -122,6 +121,9 @@ def run_matching_query(benchmark_ids: list):
     
     all_scores_df = pd.concat(scores_list, ignore_index=True).dropna(subset=['tv_value'])
     
+    # PASTIKAN tv_value numerik
+    all_scores_df['tv_value'] = pd.to_numeric(all_scores_df['tv_value'], errors='coerce').fillna(0.0)
+    
     # Gabung dengan mapping
     scores_with_details = pd.merge(
         all_scores_df,
@@ -137,9 +139,18 @@ def run_matching_query(benchmark_ids: list):
     benchmark_baseline = benchmark_data.groupby('tv_name')['tv_value'].median().reset_index()
     benchmark_baseline.rename(columns={'tv_value': 'baseline_score'}, inplace=True)
     
+    # PAKSA baseline_score ke float
+    benchmark_baseline['baseline_score'] = pd.to_numeric(benchmark_baseline['baseline_score'], errors='coerce').fillna(0.0)
+    
     # Hitung tingkat pencocokan TV
     tv_match_rates = pd.merge(scores_with_details, benchmark_baseline, on='tv_name', how='left')
     tv_match_rates.rename(columns={'tv_value': 'user_score'}, inplace=True)
+    
+    # PAKSA user_score ke float
+    tv_match_rates['user_score'] = pd.to_numeric(tv_match_rates['user_score'], errors='coerce').fillna(0.0)
+    tv_match_rates['baseline_score'] = pd.to_numeric(tv_match_rates['baseline_score'], errors='coerce').fillna(0.0)
+    
+    # Inisialisasi dengan float eksplisit
     tv_match_rates['tv_match_rate'] = 0.0
     
     # Tangani skala inverse
@@ -159,19 +170,33 @@ def run_matching_query(benchmark_ids: list):
     inverse_score = 100.0 - (np.maximum(0, user - base) / base) * 100.0
     tv_match_rates.loc[mask_inverse, 'tv_match_rate'] = np.maximum(0, inverse_score)
     
+    # BERSIHKAN tv_match_rate dari inf/nan
+    tv_match_rates['tv_match_rate'] = tv_match_rates['tv_match_rate'].replace([np.inf, -np.inf], np.nan).fillna(0.0)
+    
     # Hitung kelengkapan data
     expected_tvs = df_mapping['Sub-test'].nunique()
     actual_tvs = tv_match_rates.groupby('employee_id')['tv_name'].nunique().reset_index()
     actual_tvs.rename(columns={'tv_name': 'actual_tv_count'}, inplace=True)
     actual_tvs['data_completeness'] = (actual_tvs['actual_tv_count'] / expected_tvs) * 100.0
     
+    # PAKSA data_completeness ke float
+    actual_tvs['data_completeness'] = pd.to_numeric(actual_tvs['data_completeness'], errors='coerce').fillna(0.0)
+    
     # Agregasi ke level TGV
     tgv_match_rates = tv_match_rates.groupby(['employee_id', 'tgv_name'])['tv_match_rate'].mean().reset_index()
     tgv_match_rates.rename(columns={'tv_match_rate': 'tgv_match_rate'}, inplace=True)
     
+    # PAKSA tgv_match_rate ke float
+    tgv_match_rates['tgv_match_rate'] = pd.to_numeric(tgv_match_rates['tgv_match_rate'], errors='coerce').fillna(0.0)
+    tgv_match_rates['tgv_match_rate'] = tgv_match_rates['tgv_match_rate'].replace([np.inf, -np.inf], np.nan).fillna(0.0)
+    
     # Hitung tingkat pencocokan akhir
     final_match_df = tgv_match_rates.groupby('employee_id')['tgv_match_rate'].mean().reset_index()
     final_match_df.rename(columns={'tgv_match_rate': 'final_match_rate'}, inplace=True)
+    
+    # PAKSA final_match_rate ke float
+    final_match_df['final_match_rate'] = pd.to_numeric(final_match_df['final_match_rate'], errors='coerce').fillna(0.0)
+    final_match_df['final_match_rate'] = final_match_df['final_match_rate'].replace([np.inf, -np.inf], np.nan).fillna(0.0)
     
     # Gabung semua informasi
     df_employees = load_table("employees")
@@ -197,6 +222,23 @@ def run_matching_query(benchmark_ids: list):
     
     final_df = final_df[[col for col in output_columns if col in final_df.columns]].copy()
     final_df.rename(columns={'Sub-test': 'tv_name'}, inplace=True)
+    
+    numeric_columns = ['baseline_score', 'user_score', 'tv_match_rate', 
+                       'tgv_match_rate', 'final_match_rate', 'data_completeness']
+    
+    for col in numeric_columns:
+        if col in final_df.columns:
+            # Paksa konversi ke numeric
+            final_df[col] = pd.to_numeric(final_df[col], errors='coerce')
+            # Replace inf dengan NaN
+            final_df[col] = final_df[col].replace([np.inf, -np.inf], np.nan)
+            # Isi NaN dengan 0 untuk keamanan visualisasi
+            final_df[col] = final_df[col].fillna(0.0)
+    
+    # Log data types untuk debugging
+    logging.info(f"Final data types: {final_df[numeric_columns].dtypes.to_dict()}")
+    logging.info(f"Sample final_match_rate: {final_df['final_match_rate'].head(5).tolist()}")
+    
     final_df.sort_values(
         by=['final_match_rate', 'employee_id', 'tgv_name', 'tv_name'],
         ascending=[False, True, True, True],
