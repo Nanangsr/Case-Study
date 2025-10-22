@@ -65,11 +65,9 @@ Case-Study/
 │
 ├── 📂 src/                   <-- Folder untuk Kode Python Aplikasi
 │   ├── 📄 __init__.py
-│   ├── 📄 config.py          <-- Konfigurasi sentral
 │   ├── 📄 database.py        <-- Logika akses data via REST API Supabase
 │   ├── 📄 ai_generator.py    <-- Logika API Groq untuk generate profil
 │   ├── 📄 visualizations.py  <-- Fungsi visualisasi Plotly
-│   ├── 📄 utils.py           <-- Fungsi utilitas (validasi, data quality, dll.)
 │   └── 📄 components.py      <-- Komponen UI modular
 │
 ├── 📂 notebooks/             <-- Folder Analisis Case 1
@@ -77,6 +75,7 @@ Case-Study/
 │
 ├── 📂 venv/                  <-- Folder Virtual Environment
 │
+├── 📄 config.py              <-- Konfigurasi sentral
 ├── 📄 app.py                 <-- Aplikasi Utama Streamlit Case 3
 │
 ├── 📄 dim_talent_mapping_rows.csv   <-- File Mapping 
