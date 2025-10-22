@@ -6,7 +6,6 @@ import pandas as pd
 import time
 import re
 import logging
-
 from config import Config
 from src import database, ai_generator, visualizations
 
@@ -114,6 +113,14 @@ if submitted:
             with st.spinner("Calculating match scores..."):
                 progress_bar.progress(30, text="Loading data & calculating...")
                 st.session_state.results_df = database.run_matching_query(selected_benchmark_ids)
+            
+            results_df = st.session_state.results_df
+            if not results_df.empty:
+                logging.info(f"Results shape: {results_df.shape}")
+                logging.info(f"Results columns dtypes: {results_df.dtypes.to_dict()}")
+                if 'final_match_rate' in results_df.columns:
+                    logging.info(f"Sample final_match_rate values: {results_df['final_match_rate'].head(10).tolist()}")
+                    logging.info(f"final_match_rate dtype: {results_df['final_match_rate'].dtype}")
             
             if st.session_state.results_df.empty:
                 raise ValueError("Match calculation returned empty results")
@@ -273,10 +280,16 @@ if st.session_state.process_complete:
             
             if not benchmark_profile.empty:
                 import plotly.graph_objects as go
+                import numpy as np
+                
+                # Jaga-jaga: bersihin data dulu sebelum di-plot
+                benchmark_profile['tgv_match_rate'] = pd.to_numeric(benchmark_profile['tgv_match_rate'], errors='coerce').fillna(0)
+                benchmark_profile['tgv_match_rate'] = benchmark_profile['tgv_match_rate'].replace([np.inf, -np.inf], 0)
+                
                 fig = go.Figure()
                 fig.add_trace(go.Scatterpolar(
-                    r=benchmark_profile['tgv_match_rate'],
-                    theta=benchmark_profile['tgv_name'],
+                    r=benchmark_profile['tgv_match_rate'].tolist(),
+                    theta=benchmark_profile['tgv_name'].tolist(),
                     fill='toself',
                     name='Benchmark Median'
                 ))
@@ -377,22 +390,15 @@ if st.session_state.process_complete:
                         
                         # Bangun prompt
                         chatbot_prompt = f"""Anda adalah asisten HR analitis. 
-
-Konteks: Hasil pencocokan talenta untuk peran '{st.session_state.role_name_final}'. 
-
-{context_summary}
-
-Catatan: Skor >100% menunjukkan performa melebihi rata-rata benchmark.
-
-Pertanyaan Pengguna: "{user_question}"
-
-Instruksi:
-1. Pertama, jelaskan penalaran Anda di tag <think></think>
-2. Kemudian berikan jawaban yang jelas dan ringkas berdasarkan data di atas
-3. Jika data tidak mendukung jawaban, katakan demikian
-
-Format: <think>PENALARAN ANDA</think> JAWABAN ANDA"""
-
+                        Konteks: Hasil pencocokan talenta untuk peran '{st.session_state.role_name_final}'. 
+                        {context_summary}
+                        Catatan: Skor >100% menunjukkan performa melebihi rata-rata benchmark.
+                        Pertanyaan Pengguna: "{user_question}"
+                        Instruksi:
+                        1. Pertama, jelaskan penalaran Anda di tag <think></think>
+                        2. Kemudian berikan jawaban yang jelas dan ringkas berdasarkan data di atas
+                        3. Jika data tidak mendukung jawaban, katakan demikian
+                        Format: <think>PENALARAN ANDA</think> JAWABAN ANDA"""
                         # Panggil AI
                         response = ai_generator.client.chat.completions.create(
                             messages=[{"role": "user", "content": chatbot_prompt}],
