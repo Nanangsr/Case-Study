@@ -1,6 +1,7 @@
 # Environment
 .env
 venv/
+venv_backup/
 env/
 *.pyc
 __pycache__/
