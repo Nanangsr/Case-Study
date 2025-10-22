@@ -6,7 +6,7 @@ streamlit>=1.28.0
 requests>=2.31.0
 python-dotenv>=1.0.0
 plotly>=6.1.1
-kaleido
+kaleido==0.2.1
 jupyter>=1.0.0
 nbformat>=5.9.0
 streamlit==1.31.0
