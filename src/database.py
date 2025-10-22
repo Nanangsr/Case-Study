@@ -1,5 +1,5 @@
 """
-database.py - Database operations via Supabase REST API
+database.py - Operasi basis data melalui REST API Supabase
 """
 import pandas as pd
 import numpy as np
@@ -8,7 +8,7 @@ import logging
 
 from config import Config
 
-# Setup logging
+# Pengaturan logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', filename='app.log', filemode='a')
 
 headers = {
@@ -18,7 +18,7 @@ headers = {
 }
 
 def load_table(table_name, batch_size=1000):
-    """Load all data from Supabase table with pagination"""
+    """Muat semua data dari tabel Supabase dengan paginasi"""
     all_data = []
     offset = 0
     
@@ -48,7 +48,7 @@ def load_table(table_name, batch_size=1000):
     return pd.DataFrame(all_data)
 
 def get_employee_list():
-    """Get employee list for dropdown"""
+    """Dapatkan daftar karyawan untuk dropdown"""
     df = load_table("employees")
     if df.empty:
         return pd.DataFrame({'employee_id': [], 'label': []})
@@ -57,7 +57,7 @@ def get_employee_list():
     return df[['employee_id', 'label']].sort_values('label')
 
 def get_role_list():
-    """Get unique role names"""
+    """Dapatkan nama peran unik"""
     df = load_table("dim_positions")
     if df.empty or 'name' not in df.columns:
         return []
@@ -65,15 +65,15 @@ def get_role_list():
 
 def run_matching_query(benchmark_ids: list):
     """
-    Core matching algorithm
-    Returns: DataFrame with match results
+    Algoritma pencocokan inti
+    Mengembalikan: DataFrame dengan hasil pencocokan
     """
     logging.info(f"Starting matching for benchmarks: {benchmark_ids}")
     if not benchmark_ids:
         logging.warning("No benchmark IDs provided")
         return pd.DataFrame()
     
-    # Load required tables
+    # Muat tabel yang diperlukan
     df_psych = load_table("profiles_psych")
     df_comp = load_table("competencies_yearly")
     df_papi = load_table("papi_scores")
@@ -83,7 +83,7 @@ def run_matching_query(benchmark_ids: list):
         logging.error("One or more source tables empty")
         return pd.DataFrame()
     
-    # Convert numeric columns
+    # Konversi kolom numerik
     for col in ['iq', 'pauli']:
         if col in df_psych.columns:
             df_psych[col] = pd.to_numeric(df_psych[col], errors='coerce')
@@ -92,12 +92,12 @@ def run_matching_query(benchmark_ids: list):
     df_comp['year'] = pd.to_numeric(df_comp['year'], errors='coerce')
     df_papi['score'] = pd.to_numeric(df_papi['score'], errors='coerce')
     
-    # Get latest competency year
+    # Dapatkan tahun kompetensi terbaru
     latest_year = df_comp['year'].max()
     df_comp_latest = df_comp[df_comp['year'] == latest_year].copy()
     df_comp_latest.rename(columns={'pillar_code': 'tv_name', 'score': 'tv_value'}, inplace=True)
     
-    # Combine all scores
+    # Gabungkan semua skor
     scores_list = []
     
     if 'iq' in df_psych.columns:
@@ -122,7 +122,7 @@ def run_matching_query(benchmark_ids: list):
     
     all_scores_df = pd.concat(scores_list, ignore_index=True).dropna(subset=['tv_value'])
     
-    # Merge with mapping
+    # Gabung dengan mapping
     scores_with_details = pd.merge(
         all_scores_df,
         df_mapping[['Sub-test', 'Talent Group Variable (TGV)', 'Meaning', 'Behavior Example', 'Note']],
@@ -132,48 +132,48 @@ def run_matching_query(benchmark_ids: list):
     )
     scores_with_details.rename(columns={'Talent Group Variable (TGV)': 'tgv_name'}, inplace=True)
     
-    # Calculate benchmark baseline (median)
+    # Hitung baseline benchmark (median)
     benchmark_data = scores_with_details[scores_with_details['employee_id'].isin(benchmark_ids)]
     benchmark_baseline = benchmark_data.groupby('tv_name')['tv_value'].median().reset_index()
     benchmark_baseline.rename(columns={'tv_value': 'baseline_score'}, inplace=True)
     
-    # Calculate TV match rates
+    # Hitung tingkat pencocokan TV
     tv_match_rates = pd.merge(scores_with_details, benchmark_baseline, on='tv_name', how='left')
     tv_match_rates.rename(columns={'tv_value': 'user_score'}, inplace=True)
     tv_match_rates['tv_match_rate'] = 0.0
     
-    # Handle inverse scales
+    # Tangani skala inverse
     is_inverse = tv_match_rates['Note'].fillna('').str.contains('Inverse Scale', case=False, na=False)
     
-    # Normal scale (higher is better)
+    # Skala normal (semakin tinggi semakin baik)
     mask_normal = ~is_inverse & tv_match_rates['baseline_score'].notna() & (tv_match_rates['baseline_score'] != 0)
     tv_match_rates.loc[mask_normal, 'tv_match_rate'] = (
         tv_match_rates.loc[mask_normal, 'user_score'] / 
         tv_match_rates.loc[mask_normal, 'baseline_score']
     ) * 100.0
     
-    # Inverse scale (lower is better)
+    # Skala inverse (semakin rendah semakin baik)
     mask_inverse = is_inverse & tv_match_rates['baseline_score'].notna() & (tv_match_rates['baseline_score'] != 0)
     user = tv_match_rates.loc[mask_inverse, 'user_score']
     base = tv_match_rates.loc[mask_inverse, 'baseline_score']
     inverse_score = 100.0 - (np.maximum(0, user - base) / base) * 100.0
     tv_match_rates.loc[mask_inverse, 'tv_match_rate'] = np.maximum(0, inverse_score)
     
-    # Calculate data completeness
+    # Hitung kelengkapan data
     expected_tvs = df_mapping['Sub-test'].nunique()
     actual_tvs = tv_match_rates.groupby('employee_id')['tv_name'].nunique().reset_index()
     actual_tvs.rename(columns={'tv_name': 'actual_tv_count'}, inplace=True)
     actual_tvs['data_completeness'] = (actual_tvs['actual_tv_count'] / expected_tvs) * 100.0
     
-    # Aggregate to TGV level
+    # Agregasi ke level TGV
     tgv_match_rates = tv_match_rates.groupby(['employee_id', 'tgv_name'])['tv_match_rate'].mean().reset_index()
     tgv_match_rates.rename(columns={'tv_match_rate': 'tgv_match_rate'}, inplace=True)
     
-    # Calculate final match rate
+    # Hitung tingkat pencocokan akhir
     final_match_df = tgv_match_rates.groupby('employee_id')['tgv_match_rate'].mean().reset_index()
     final_match_df.rename(columns={'tgv_match_rate': 'final_match_rate'}, inplace=True)
     
-    # Join all information
+    # Gabung semua informasi
     df_employees = load_table("employees")
     df_direct = load_table("dim_directorates")
     df_pos = load_table("dim_positions")
@@ -187,7 +187,7 @@ def run_matching_query(benchmark_ids: list):
     final_df = pd.merge(final_df, df_pos[['position_id', 'name']].rename(columns={'name': 'role'}), on='position_id', how='left')
     final_df = pd.merge(final_df, df_grades[['grade_id', 'name']].rename(columns={'name': 'grade'}), on='grade_id', how='left')
     
-    # Select and sort columns
+    # Pilih dan urutkan kolom
     output_columns = [
         'employee_id', 'fullname', 'directorate', 'role', 'grade',
         'tgv_name', 'Sub-test', 'Meaning', 'Behavior Example', 'Note',

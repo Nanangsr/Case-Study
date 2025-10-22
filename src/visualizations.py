@@ -1,12 +1,12 @@
 """
-visualizations.py - Plotly chart components
+visualizations.py - Komponen grafik Plotly
 """
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 
 def plot_match_distribution(df: pd.DataFrame):
-    """Match rate distribution histogram"""
+    """Histogram distribusi tingkat pencocokan"""
     if df.empty or 'final_match_rate' not in df.columns:
         return go.Figure()
     
@@ -22,7 +22,7 @@ def plot_match_distribution(df: pd.DataFrame):
     return fig
 
 def plot_top_candidates(df: pd.DataFrame, top_n=10):
-    """Top candidates bar chart"""
+    """Grafik batang kandidat teratas"""
     if df.empty or 'final_match_rate' not in df.columns:
         return go.Figure()
     
@@ -42,7 +42,7 @@ def plot_top_candidates(df: pd.DataFrame, top_n=10):
     return fig
 
 def plot_profile_comparison(df: pd.DataFrame, candidate_id: str, benchmark_ids: list):
-    """Radar chart comparing candidate vs benchmark"""
+    """Grafik radar perbandingan kandidat vs benchmark"""
     if df.empty or 'tgv_match_rate' not in df.columns:
         return go.Figure()
     
@@ -60,9 +60,9 @@ def plot_profile_comparison(df: pd.DataFrame, candidate_id: str, benchmark_ids: 
         suffixes=('_candidate', '_benchmark')
     )
     
-    # Hitung max value untuk range dinamis
+    # Hitung nilai maksimum untuk rentang dinamis
     max_value = comparison_df[['tgv_match_rate_candidate', 'tgv_match_rate_benchmark']].max().max()
-    radial_range = [0, max(100, max_value * 1.1)]  # Minimal 100, extend 10% di atas max
+    radial_range = [0, max(100, max_value * 1.1)]  # Minimal 100, perluas 10% di atas maksimum
     
     fig = go.Figure()
     

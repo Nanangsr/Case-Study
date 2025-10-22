@@ -50,7 +50,7 @@ Aplikasi Streamlit ini mengimplementasikan sistem cerdas untuk membantu manajer 
 Catatan: Aplikasi akan validasi input dan tampilkan warning jika data tidak lengkap. Cek file `app.log` untuk detail logging jika ada error.
 
 ## Project Structure
-
+```bash
 Case-Study/
 │
 ├── 📄 README.md
@@ -59,9 +59,9 @@ Case-Study/
 ├── 📄 .env.example
 ├── 📄 .gitignore
 │
-├── 📂 sql/                   <-- Folder untuk SQL (opsional, jika diperlukan query pendukung)
+├── 📂 sql/                   <-- Folder untuk SQL
 │   ├── 📄 talent_matching_query.sql  <-- Script SQL Utama Case 2
-│   └── 📄 ... (file SQL pendukung lainnya)
+│   └── 📄 ...                        <-- (file SQL pendukung lainnya)
 │
 ├── 📂 src/                   <-- Folder untuk Kode Python Aplikasi
 │   ├── 📄 __init__.py
@@ -81,4 +81,5 @@ Case-Study/
 │
 ├── 📄 dim_talent_mapping_rows.csv   <-- File Mapping 
 ├── 📄 Supabase Snippet Consolidated employee score set.csv <-- File Hasil Ekspor 
-├── 📄 app.log                <-- File logging (generated otomatis)
+└── 📄 app.log                <-- File logging
+```

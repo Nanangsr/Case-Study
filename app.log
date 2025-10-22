@@ -13,3 +13,51 @@
 2025-10-21 21:43:40,848 - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
 2025-10-21 21:43:41,369 - INFO - Process completed successfully
 2025-10-21 21:44:57,067 - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 22:23:14,129 - INFO - Tabel employees dimuat dengan 2010 baris
+2025-10-21 22:23:14,504 - INFO - Tabel dim_positions dimuat dengan 6 baris
+2025-10-21 22:25:11,275 - INFO - Proses submit dimulai
+2025-10-21 22:25:11,295 - INFO - Mulai pencocokan untuk benchmark: ['EMP100011', 'EMP100010', 'EMP100012']
+2025-10-21 22:25:12,749 - INFO - Tabel profiles_psych dimuat dengan 2010 baris
+2025-10-21 22:25:41,673 - INFO - Tabel competencies_yearly dimuat dengan 100500 baris
+2025-10-21 22:25:51,902 - INFO - Tabel papi_scores dimuat dengan 40200 baris
+2025-10-21 22:25:52,237 - INFO - Tabel dim_talent_mapping dimuat dengan 80 baris
+2025-10-21 22:25:53,669 - INFO - Tabel employees dimuat dengan 2010 baris
+2025-10-21 22:25:53,927 - INFO - Tabel dim_directorates dimuat dengan 3 baris
+2025-10-21 22:25:54,157 - INFO - Tabel dim_positions dimuat dengan 6 baris
+2025-10-21 22:25:54,416 - INFO - Tabel dim_grades dimuat dengan 3 baris
+2025-10-21 22:25:54,966 - INFO - Pencocokan selesai dengan 57195 baris
+2025-10-21 22:25:55,024 - WARNING - Kelengkapan benchmark rendah: 34.3%
+2025-10-21 22:25:59,484 - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 22:26:00,021 - INFO - Proses selesai dengan sukses
+2025-10-21 22:27:22,842 - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 22:34:34,605 - INFO - Process submitted started
+2025-10-21 22:34:34,612 - INFO - Starting matching for benchmarks: ['EMP100230', 'EMP100059', 'EMP100006']
+2025-10-21 22:34:37,248 - INFO - Loaded table profiles_psych with 2010 rows
+2025-10-21 22:35:05,205 - INFO - Loaded table competencies_yearly with 100500 rows
+2025-10-21 22:35:15,948 - INFO - Loaded table papi_scores with 40200 rows
+2025-10-21 22:35:16,257 - INFO - Loaded table dim_talent_mapping with 80 rows
+2025-10-21 22:35:17,351 - INFO - Loaded table employees with 2010 rows
+2025-10-21 22:35:17,594 - INFO - Loaded table dim_directorates with 3 rows
+2025-10-21 22:35:17,837 - INFO - Loaded table dim_positions with 6 rows
+2025-10-21 22:35:18,049 - INFO - Loaded table dim_grades with 3 rows
+2025-10-21 22:35:18,468 - INFO - Matching completed with 57195 rows
+2025-10-21 22:35:18,520 - WARNING - Low benchmark completeness: 36.3%
+2025-10-21 22:35:21,151 - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-21 22:35:21,668 - INFO - Process completed successfully
+2025-10-21 22:37:10,403 - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-22 09:11:15,325 - INFO - Loaded table employees with 2010 rows
+2025-10-22 09:11:15,892 - INFO - Loaded table dim_positions with 6 rows
+2025-10-22 09:12:15,232 - INFO - Process submitted started
+2025-10-22 09:12:15,238 - INFO - Starting matching for benchmarks: ['EMP100011', 'EMP100010', 'EMP100012']
+2025-10-22 09:12:16,841 - INFO - Loaded table profiles_psych with 2010 rows
+2025-10-22 09:12:52,307 - INFO - Loaded table competencies_yearly with 100500 rows
+2025-10-22 09:13:05,619 - INFO - Loaded table papi_scores with 40200 rows
+2025-10-22 09:13:06,002 - INFO - Loaded table dim_talent_mapping with 80 rows
+2025-10-22 09:13:07,352 - INFO - Loaded table employees with 2010 rows
+2025-10-22 09:13:07,760 - INFO - Loaded table dim_directorates with 3 rows
+2025-10-22 09:13:08,079 - INFO - Loaded table dim_positions with 6 rows
+2025-10-22 09:13:08,384 - INFO - Loaded table dim_grades with 3 rows
+2025-10-22 09:13:08,718 - INFO - Matching completed with 57195 rows
+2025-10-22 09:13:08,770 - WARNING - Low benchmark completeness: 34.3%
+2025-10-22 09:13:10,873 - INFO - HTTP Request: POST https://api.groq.com/openai/v1/chat/completions "HTTP/1.1 200 OK"
+2025-10-22 09:13:11,412 - INFO - Process completed successfully

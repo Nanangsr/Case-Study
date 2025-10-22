@@ -1,5 +1,5 @@
 """
-ai_generator.py - AI job profile generation via Groq
+ai_generator.py - Pembangkit profil pekerjaan AI melalui Groq
 """
 from groq import Groq
 from config import Config
@@ -8,22 +8,22 @@ import json
 client = Groq(api_key=Config.GROQ_API_KEY)
 
 def generate_job_profile(role_name: str, role_purpose: str, job_level: str, benchmark_summary: str = None):
-    """Generate job profile using Groq API"""
+    """Membangkitkan profil pekerjaan menggunakan API Groq"""
     
-    prompt = f"""You are an expert HR business partner. Create a comprehensive job profile in JSON format.
+    prompt = f"""Anda adalah mitra bisnis HR ahli. Buat profil pekerjaan komprehensif dalam format JSON.
 
-Role: {role_name}
-Level: {job_level}
-Purpose: {role_purpose}
-Benchmark Summary: {benchmark_summary if benchmark_summary else "Not provided"}
+    Peran: {role_name}
+    Level: {job_level}
+    Tujuan: {role_purpose}
+    Ringkasan Benchmark: {benchmark_summary if benchmark_summary else "Tidak disediakan"}
 
-Return valid JSON with these keys:
-1. "job_description": 2-3 sentences describing the role
-2. "responsibilities": List of 5-7 key responsibilities
-3. "qualifications": List of 3-5 minimum qualifications
-4. "key_competencies": List of 3-5 critical soft skills
+    Kembalikan JSON valid dengan kunci-kunci ini:
+    1. "job_description": 2-3 kalimat yang mendeskripsikan peran
+    2. "responsibilities": Daftar 5-7 tanggung jawab utama
+    3. "qualifications": Daftar 3-5 kualifikasi minimum
+    4. "key_competencies": Daftar 3-5 keterampilan lunak kritis
 
-Keep it concise and professional."""
+    Jagalah agar ringkas dan profesional."""
 
     try:
         response = client.chat.completions.create(

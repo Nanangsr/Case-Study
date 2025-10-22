@@ -1,5 +1,5 @@
 """
-app.py - Main Streamlit Application (Fixed & Clean)
+app.py - Aplikasi Utama Streamlit
 """
 import streamlit as st
 import pandas as pd
@@ -10,17 +10,17 @@ import logging
 from config import Config
 from src import database, ai_generator, visualizations
 
-# Setup logging
+# Pengaturan logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', filename='app.log', filemode='a')
 
-# Page config
+# Konfigurasi halaman
 st.set_page_config(
     page_title=Config.APP_TITLE,
     page_icon=Config.PAGE_ICON,
     layout="wide"
 )
 
-# Initialize session state
+# Inisialisasi session state
 if 'results_df' not in st.session_state:
     st.session_state.results_df = pd.DataFrame()
 if 'ai_profile' not in st.session_state:
@@ -36,7 +36,7 @@ if 'messages' not in st.session_state:
 if 'active_tab' not in st.session_state:
     st.session_state.active_tab = 0
 
-# Load data
+# Muat data
 @st.cache_data(ttl=Config.CACHE_TTL)
 def load_initial_data():
     return database.get_employee_list(), database.get_role_list()
@@ -48,7 +48,7 @@ if employee_df.empty:
     logging.error("Failed to load employee data")
     st.stop()
 
-# Title
+# Judul
 st.title(f"{Config.PAGE_ICON} {Config.APP_TITLE}")
 st.caption("Identify internal talent based on benchmark profiles")
 
@@ -56,7 +56,7 @@ st.caption("Identify internal talent based on benchmark profiles")
 with st.sidebar:
     st.header("Configuration")
     
-    # Role selection
+    # Pemilihan peran
     role_options = [""] + sorted(role_list) + ["[New Role]"]
     role_selected = st.selectbox(
         "Role / Position",
@@ -64,7 +64,7 @@ with st.sidebar:
         key="role_select"
     )
     
-    # Show manual input immediately when [New Role] is selected
+    # Tampilkan input manual segera saat [New Role] dipilih
     if role_selected == "[New Role]":
         role_manual = st.text_input("Enter new role name:", key="role_manual")
         role_name = role_manual
@@ -83,11 +83,11 @@ with st.sidebar:
     
     submitted = st.button("Generate Profile & Match", type="primary", use_container_width=True)
 
-# Process on submit
+# Proses saat submit
 if submitted:
     logging.info("Process submitted started")
     
-    # Input Validation
+    # Validasi input
     if not role_name or role_name == "[New Role]":
         st.warning("Please enter a valid role name.")
         logging.warning("Invalid role name")
@@ -100,7 +100,7 @@ if submitted:
         st.warning("Please enter role purpose.")
         logging.warning("Empty role purpose")
     else:
-        try:  # Error Boundary untuk seluruh proses
+        try:  # Batas error untuk seluruh proses
             st.session_state.role_name_final = role_name
             st.session_state.process_complete = False
             st.session_state.messages = []
@@ -110,7 +110,7 @@ if submitted:
             
             progress_bar = st.progress(0, text="Starting process...")
             
-            # Calculate matches
+            # Hitung pencocokan
             with st.spinner("Calculating match scores..."):
                 progress_bar.progress(30, text="Loading data & calculating...")
                 st.session_state.results_df = database.run_matching_query(selected_benchmark_ids)
@@ -118,14 +118,14 @@ if submitted:
             if st.session_state.results_df.empty:
                 raise ValueError("Match calculation returned empty results")
             
-            # Data Quality Indicators: Check benchmark completeness
+            # Indikator kualitas data: Periksa kelengkapan benchmark
             benchmark_df = st.session_state.results_df[st.session_state.results_df['employee_id'].isin(selected_benchmark_ids)]
             avg_completeness = benchmark_df['data_completeness'].mean()
             if avg_completeness < 80:
                 st.warning(f"Benchmark data quality low: Average completeness {avg_completeness:.1f}%. Results may be inaccurate.")
                 logging.warning(f"Low benchmark completeness: {avg_completeness:.1f}%")
             
-            # Generate AI profile
+            # Bangkitkan profil AI
             with st.spinner("Generating AI profile..."):
                 progress_bar.progress(70, text="Contacting AI...")
                 st.session_state.ai_profile = ai_generator.generate_job_profile(
@@ -145,7 +145,7 @@ if submitted:
             logging.error(f"Process error: {str(e)}")
             progress_bar.empty()
 
-# Display results
+# Tampilkan hasil
 if st.session_state.process_complete:
     st.markdown("---")
     st.header("Results")
@@ -154,7 +154,7 @@ if st.session_state.process_complete:
         "AI Profile", "Ranking", "Dashboard", "Comparison", "Ask AI"
     ])
     
-    # TAB 1: AI PROFILE
+    # TAB 1: PROFIL AI
     with tab_profile:
         ai_profile = st.session_state.ai_profile
         
@@ -184,7 +184,7 @@ if st.session_state.process_complete:
                 for item in comp_list:
                     st.markdown(f"- {item}")
     
-    # TAB 2: RANKING
+    # TAB 2: PERINGKAT
     with tab_ranking:
         results_df = st.session_state.results_df
         
@@ -255,7 +255,7 @@ if st.session_state.process_complete:
                 mime='text/csv'
             )
     
-    # TAB 3: DASHBOARD
+    # TAB 3: DASBOR
     with tab_dashboard:
         results_df = st.session_state.results_df
         
@@ -286,7 +286,7 @@ if st.session_state.process_complete:
                 )
                 st.plotly_chart(fig, use_container_width=True)
     
-    # TAB 4: COMPARISON
+    # TAB 4: PERBANDINGAN
     with tab_compare:
         results_df = st.session_state.results_df
         
@@ -332,7 +332,7 @@ if st.session_state.process_complete:
         results_df = st.session_state.results_df
         
         if not results_df.empty:
-            # Display chat history
+            # Tampilkan riwayat chat
             for message in st.session_state.messages:
                 with st.chat_message(message["role"]):
                     if message["role"] == "assistant" and "thinking" in message and message["thinking"] and show_thinking:
@@ -340,7 +340,7 @@ if st.session_state.process_complete:
                             st.markdown(message["thinking"])
                     st.markdown(message["content"])
             
-            # Chat input
+            # Input chat
             if user_question := st.chat_input("Example: 'Who is strongest in Leadership?', 'What are Joko's gaps?'"):
                 st.session_state.messages.append({"role": "user", "content": user_question})
                 
@@ -352,11 +352,11 @@ if st.session_state.process_complete:
                     message_placeholder.markdown("Thinking...")
                     
                     try:
-                        # Prepare context
+                        # Siapkan konteks
                         top_5 = results_df.drop_duplicates(subset=['employee_id'])\
                             .sort_values('final_match_rate', ascending=False).head(5)
                         
-                        context_summary = f"Top 5 Candidates Summary for role '{st.session_state.role_name_final}':\n"
+                        context_summary = f"Ringkasan 5 Kandidat Teratas untuk peran '{st.session_state.role_name_final}':\n"
                         
                         for _, row in top_5.iterrows():
                             emp_id = row['employee_id']
@@ -364,36 +364,36 @@ if st.session_state.process_complete:
                             final_score = row['final_match_rate']
                             completeness = row['data_completeness']
                             
-                            context_summary += f"\n- {name} ({emp_id}), Final Score: {final_score:.2f}%, Data Completeness: {completeness:.1f}%\n"
+                            context_summary += f"\n- {name} ({emp_id}), Skor Akhir: {final_score:.2f}%, Kelengkapan Data: {completeness:.1f}%\n"
                             
-                            # TGV summary for this employee
+                            # Ringkasan TGV untuk karyawan ini
                             emp_data = results_df[results_df['employee_id'] == emp_id]\
                                 .drop_duplicates(subset=['tgv_name'])[['tgv_name', 'tgv_match_rate']]\
                                 .sort_values('tgv_match_rate', ascending=False)
                             
-                            context_summary += "  Top TGV Scores:\n"
+                            context_summary += "  Skor TGV Teratas:\n"
                             for _, tgv_row in emp_data.head(3).iterrows():
                                 context_summary += f"    - {tgv_row['tgv_name']}: {tgv_row['tgv_match_rate']:.1f}%\n"
                         
-                        # Construct prompt
-                        chatbot_prompt = f"""You are an analytical HR assistant. 
+                        # Bangun prompt
+                        chatbot_prompt = f"""Anda adalah asisten HR analitis. 
 
-                        Context: Talent matching results for role '{st.session_state.role_name_final}'. 
+Konteks: Hasil pencocokan talenta untuk peran '{st.session_state.role_name_final}'. 
 
-                        {context_summary}
+{context_summary}
 
-                        Note: Scores >100% indicate performance exceeding benchmark average.
+Catatan: Skor >100% menunjukkan performa melebihi rata-rata benchmark.
 
-                        User Question: "{user_question}"
+Pertanyaan Pengguna: "{user_question}"
 
-                        Instructions:
-                        1. First, explain your reasoning in <think></think> tags
-                        2. Then provide a clear, concise answer based on the data above
-                        3. If the data doesn't support an answer, say so
+Instruksi:
+1. Pertama, jelaskan penalaran Anda di tag <think></think>
+2. Kemudian berikan jawaban yang jelas dan ringkas berdasarkan data di atas
+3. Jika data tidak mendukung jawaban, katakan demikian
 
-                        Format: <think>YOUR REASONING</think> YOUR ANSWER"""
+Format: <think>PENALARAN ANDA</think> JAWABAN ANDA"""
 
-                        # Call AI
+                        # Panggil AI
                         response = ai_generator.client.chat.completions.create(
                             messages=[{"role": "user", "content": chatbot_prompt}],
                             model=Config.GROQ_MODEL,
@@ -402,7 +402,7 @@ if st.session_state.process_complete:
                         
                         ai_raw_answer = response.choices[0].message.content
                         
-                        # Parse thinking and answer
+                        # Urai penalaran dan jawaban
                         thinking_part = ""
                         answer_part = ai_raw_answer
                         
@@ -411,14 +411,14 @@ if st.session_state.process_complete:
                             thinking_part = match.group(1).strip()
                             answer_part = match.group(2).strip()
                         
-                        # Display
+                        # Tampilkan
                         if show_thinking and thinking_part:
                             with st.expander("AI Thinking Process", expanded=False):
                                 st.markdown(thinking_part)
                         
                         message_placeholder.markdown(answer_part)
                         
-                        # Store in history
+                        # Simpan di riwayat
                         st.session_state.messages.append({
                             "role": "assistant",
                             "content": answer_part,
@@ -438,4 +438,4 @@ if st.session_state.process_complete:
 
 # Footer
 st.markdown("---")
-st.caption(f"{Config.APP_TITLE} v2.0 - Clean & Optimized")
+st.caption(f"{Config.APP_TITLE} v1.0 - Nanang Safiu R - 2025")
